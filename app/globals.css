@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #f4f1e9;
+  --foreground: #081a2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Instrument Sans Variable", "Instrument Sans", Aptos, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: #214565;
+  color: #fbfaf6;
+}
+
+.container-px {
+  @apply mx-auto w-full max-w-[1640px] px-5 sm:px-7 lg:px-10;
+}
+
+.section-y {
+  @apply py-20 sm:py-24 lg:py-28;
+}
+
+.focus-ring {
+  @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-navy-700;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.surface-grid {
+  background: #f4f1e9;
+}
+
+.dark-surface {
+  background: #081a2d;
+}
+
+.rule-x {
+  @apply border-t border-navy-200;
+}
+
+.section-label {
+  @apply text-xs font-semibold uppercase tracking-[0.18em] text-navy-500;
+}
+
+.display-tight {
+  @apply font-display font-semibold uppercase leading-[0.94] tracking-[-0.045em];
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.safe-heading {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@layer components {
+  .form-input {
+    @apply min-h-11 w-full rounded-none border border-navy-200 bg-paper-50 px-3 py-2 text-sm text-navy-950 outline-none transition placeholder:text-navy-500/60 focus:border-navy-700;
+  }
+
+  .markdown-body {
+    @apply text-base leading-8 text-navy-800;
+  }
+
+  .markdown-body > * + * {
+    @apply mt-6;
+  }
+
+  .markdown-body h1,
+  .markdown-body h2,
+  .markdown-body h3,
+  .markdown-body h4 {
+    @apply font-display font-semibold uppercase leading-none tracking-[-0.04em] text-navy-950;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .markdown-body h1 {
+    @apply text-5xl sm:text-6xl;
+  }
+
+  .markdown-body h2 {
+    @apply text-4xl sm:text-5xl;
+  }
+
+  .markdown-body h3 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  .markdown-body h4 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  .markdown-body a {
+    @apply font-semibold text-navy-950 underline underline-offset-4;
+  }
+
+  .markdown-body ul,
+  .markdown-body ol {
+    @apply grid gap-3 pl-5;
+  }
+
+  .markdown-body ul {
+    @apply list-disc;
+  }
+
+  .markdown-body ol {
+    @apply list-decimal;
+  }
+
+  .markdown-body blockquote {
+    @apply border-l-4 border-navy-950 bg-paper-100 px-5 py-4 font-display text-2xl leading-snug text-navy-950;
+  }
+
+  .markdown-body pre {
+    @apply overflow-x-auto border border-navy-200 bg-navy-950 p-5 text-sm leading-7 text-paper-50;
+  }
+
+  .markdown-body :not(pre) > code {
+    @apply border border-navy-200 bg-paper-100 px-1.5 py-0.5 text-sm text-navy-950;
+  }
+
+  .rich-text-editor:focus {
+    @apply bg-white;
+  }
+
+  .rich-text-editor > *:first-child {
+    @apply mt-0;
+  }
+}
