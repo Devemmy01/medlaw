@@ -102,9 +102,6 @@ export function DonationTierCard({
       <p className="text-sm font-semibold text-navy-500">{amount}</p>
       <h3 className="mt-3 text-xl font-semibold text-navy-950">{title}</h3>
       <p className="mt-4 flex-1 text-sm leading-7 text-navy-700">{description}</p>
-      <button className="focus-ring mt-6 inline-flex min-h-11 items-center justify-center border border-navy-950 bg-navy-950 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-paper-50 transition hover:bg-paper-50 hover:text-navy-950">
-        Select tier
-      </button>
     </AnimatedReveal>
   );
 }

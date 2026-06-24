@@ -421,9 +421,9 @@ export const contactCards: IconItem[] = [
 
 export const faqs = [
   {
-    question: "Is the donation flow live?",
+    question: "How can I make a donation?",
     answer:
-      "No. This interface is a secure payment placeholder until Medical Law Hub supplies payment provider details."
+      "You can donate by bank transfer to Medical Law Hub's UBA account using the details provided on this page."
   },
   {
     question: "How are donations allocated?",
