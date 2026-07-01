@@ -6,12 +6,21 @@ import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { involvement } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Get Involved",
+export const metadata: Metadata = createPageMetadata({
+  title: "Get Involved in Medical Law Hub",
   description:
-    "Join Medical Law Hub through professional memberships, volunteer networks, academic fellowships, institutional alliances and corporate partnerships."
-};
+    "Join Medical Law Hub through medical law volunteering, professional membership, academic fellowships, institutional partnerships and public-interest health law projects.",
+  path: "/get-involved",
+  image: {
+    url: "/images/medlaw-workshop.png",
+    width: 1536,
+    height: 1024,
+    alt: "Medical Law Hub community education and volunteer workshop"
+  },
+  keywords: ["medical law volunteer", "health law fellowship", "medical law membership"]
+});
 
 export default function GetInvolvedPage() {
   return (
@@ -24,6 +33,9 @@ export default function GetInvolvedPage() {
         primaryLabel="Start application"
         secondaryHref="/contact"
         secondaryLabel="Ask a question"
+        mediaSrc="/images/medlaw-workshop.png"
+        mediaAlt="Medical-law community education workshop with volunteers and participants"
+        mediaCaption="Membership / Volunteering / Institutional partnership"
       />
 
       <section className="section-y bg-paper-50">

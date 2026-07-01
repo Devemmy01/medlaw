@@ -8,12 +8,21 @@ import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { donationTiers, faqs } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Donate & Support",
+export const metadata: Metadata = createPageMetadata({
+  title: "Donate to Medical Law Hub",
   description:
-    "Support Medical Law Hub's legal literacy, patient empowerment, medical law competitions, public health policy briefs and bioethics research."
-};
+    "Support Medical Law Hub's public legal education, patient empowerment resources, medical law competitions, health policy briefs and bioethics research.",
+  path: "/donate",
+  image: {
+    url: "/images/medlaw-workshop.png",
+    width: 1536,
+    height: 1024,
+    alt: "Community workshop supported by Medical Law Hub donations"
+  },
+  keywords: ["donate medical law", "support patient rights", "fund legal literacy"]
+});
 
 export default function DonatePage() {
   return (
@@ -26,6 +35,9 @@ export default function DonatePage() {
         primaryLabel="View account details"
         secondaryHref="/contact"
         secondaryLabel="Sponsor a programme"
+        mediaSrc="/images/medlaw-workshop.png"
+        mediaAlt="Community workshop supported by medical-law education programmes"
+        mediaCaption="Donor support / Legal literacy / Programme impact"
       />
 
       <section id="tiers" className="section-y bg-paper-50">

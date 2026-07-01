@@ -4,16 +4,18 @@ import { CTASection } from "@/components/CTASection";
 import { ImpactCard, TeamCard } from "@/components/Cards";
 import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { ButtonLink } from "@/components/ButtonLink";
-import { Logo } from "@/components/Logo";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { activities, focusSectors, team } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About",
+export const metadata: Metadata = createPageMetadata({
+  title: "About Medical Law Hub",
   description:
-    "Learn about Medical Law Hub, its international medical law mission, expert board, governance safeguards and public benefit commitment."
-};
+    "Learn about Medical Law Hub, its public-interest medical law mission, expert contributors, governance safeguards, health law research and patient rights education work.",
+  path: "/about",
+  keywords: ["about Medical Law Hub", "medical law experts", "health law governance"]
+});
 
 export default function AboutPage() {
   return (
@@ -23,12 +25,7 @@ export default function AboutPage() {
           <AnimatedReveal className="overflow-hidden border border-navy-200 bg-paper-50">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
               <div className="flex min-h-[520px] min-w-0 flex-col justify-between border-b border-navy-200 p-6 sm:min-h-[560px] sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
-                <div className="flex items-center justify-between gap-6 border-b border-navy-200 pb-5">
-                  <Logo showTagline={false} />
-                  <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-navy-500 sm:block">
-                    About / MLH
-                  </p>
-                </div>
+                
                 <div className="min-w-0 py-10 sm:py-12">
                   <p className="section-label mb-5">About the Hub</p>
                   <h1 className="display-tight max-w-4xl text-[clamp(2.65rem,11.5vw,6.1rem)]">

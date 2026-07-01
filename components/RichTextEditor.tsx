@@ -131,6 +131,13 @@ export function RichTextEditor({ label, value, onChange, placeholder = "Write yo
     flushEditorValue();
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      addLink();
+    }
+  }
+
   function handlePaste(event: React.ClipboardEvent<HTMLDivElement>) {
     event.preventDefault();
     document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
@@ -148,7 +155,7 @@ export function RichTextEditor({ label, value, onChange, placeholder = "Write yo
           <ToolbarDivider />
           <ToolbarButton label="Bold" icon={Bold} onClick={() => runCommand("bold")} />
           <ToolbarButton label="Italic" icon={Italic} onClick={() => runCommand("italic")} />
-          <ToolbarButton label="Add link (select text first)" icon={LinkIcon} onClick={addLink} />
+          <ToolbarButton label="Add link (Cmd/Ctrl+K)" icon={LinkIcon} onClick={addLink} />
           <ToolbarDivider />
           <ToolbarButton label="Bulleted list" icon={List} onClick={() => runCommand("insertUnorderedList")} />
           <ToolbarButton label="Numbered list" icon={ListOrdered} onClick={() => runCommand("insertOrderedList")} />
@@ -170,6 +177,7 @@ export function RichTextEditor({ label, value, onChange, placeholder = "Write yo
             aria-label={label}
             aria-multiline="true"
             onInput={scheduleChange}
+            onKeyDown={handleKeyDown}
             onBlur={flushEditorValue}
             onPaste={handlePaste}
           />

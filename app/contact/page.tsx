@@ -8,12 +8,21 @@ import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { contactCards } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact",
+export const metadata: Metadata = createPageMetadata({
+  title: "Contact Medical Law Hub",
   description:
-    "Contact Medical Law Hub for central inquiries, press desk requests, institutional partnerships, medical law research and donor support."
-};
+    "Contact Medical Law Hub for medical law research inquiries, press requests, institutional partnerships, donor support, patient rights education and health policy collaboration.",
+  path: "/contact",
+  image: {
+    url: "/images/medlaw-consultation.png",
+    width: 1536,
+    height: 1024,
+    alt: "Medical and legal professionals reviewing medico-legal documents"
+  },
+  keywords: ["contact medical law hub", "medical law research inquiry", "health law partnership"]
+});
 
 export default function ContactPage() {
   return (
@@ -22,6 +31,9 @@ export default function ContactPage() {
         eyebrow="Contact"
         title="Reach the Medical Law Hub central inquiry desk."
         description="Route institutional, academic, press and philanthropic communications through verified Medical Law Hub channels."
+        mediaSrc="/images/medlaw-consultation.png"
+        mediaAlt="A clinical and legal consultation reviewing healthcare accountability documents"
+        mediaCaption="Editorial desk / Partnerships / Public inquiries"
       />
 
       <section className="section-y bg-paper-50">

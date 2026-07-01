@@ -1,7 +1,8 @@
 "use client";
 
-import { ImageUp, Link2, Loader2, LogOut, Save } from "lucide-react";
+import { Eye, ImageUp, Link2, Loader2, LogOut, Pencil, Plus, Save, X } from "lucide-react";
 import { type ChangeEvent, type FormEvent, useDeferredValue, useMemo, useState } from "react";
+import Link from "next/link";
 
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -9,6 +10,7 @@ import type { BlogPostWithAuthor } from "@/lib/blog-store";
 
 type AdminBlogDashboardProps = {
   initialPosts: BlogPostWithAuthor[];
+  initialError?: string;
 };
 
 type PostForm = {
@@ -34,16 +36,18 @@ const initialPostForm: PostForm = {
   publishedAt: ""
 };
 
-export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
+export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlogDashboardProps) {
   const [posts, setPosts] = useState(initialPosts);
   const [postForm, setPostForm] = useState<PostForm>(initialPostForm);
+  const [editingPostId, setEditingPostId] = useState("");
   const [postSaving, setPostSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const previewContent = useDeferredValue(postForm.content);
 
   const publishedPosts = useMemo(() => posts.filter((post) => post.status === "published").length, [posts]);
+  const editingPost = useMemo(() => posts.find((post) => post.id === editingPostId), [editingPostId, posts]);
 
   async function handlePostSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,10 +58,12 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
     setError("");
 
     try {
+      const method = editingPostId ? "PATCH" : "POST";
       const response = await fetch("/api/admin/blog/posts", {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: editingPostId || undefined,
           ...postForm,
           content,
           tags: postForm.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
@@ -69,9 +75,22 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
         throw new Error(result.error ?? "Unable to save post.");
       }
 
-      setPosts((items) => [result.post as BlogPostWithAuthor, ...items]);
+      setPosts((items) => {
+        const updatedPost = result.post as BlogPostWithAuthor;
+
+        if (editingPostId) {
+          return items.map((item) => (item.id === updatedPost.id ? updatedPost : item));
+        }
+
+        return [updatedPost, ...items];
+      });
       setPostForm(initialPostForm);
-      setNotice(`Post saved at /blog/${result.post.slug}. The excerpt and slug were generated automatically.`);
+      setEditingPostId("");
+      setNotice(
+        editingPostId
+          ? `Post updated at /blog/${result.post.slug}.`
+          : `Post saved at /blog/${result.post.slug}. The excerpt and slug were generated automatically.`
+      );
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "Unable to save post.");
     } finally {
@@ -123,6 +142,23 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
     window.location.assign("/admin/login");
   }
 
+  function startEditingPost(post: BlogPostWithAuthor) {
+    setEditingPostId(post.id);
+    setPostForm(postToForm(post));
+    setNotice(`Editing "${post.title}".`);
+    setError("");
+    window.requestAnimationFrame(() => {
+      document.getElementById("post-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function resetEditor() {
+    setEditingPostId("");
+    setPostForm(initialPostForm);
+    setNotice("");
+    setError("");
+  }
+
   return (
     <main className="min-h-screen bg-paper-100 text-navy-950">
       <section className="border-b border-navy-200 bg-paper-50 py-6">
@@ -157,13 +193,42 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
 
       <section className="section-y">
         <div className="container-px grid gap-8">
-          <form onSubmit={handlePostSubmit} className="border border-navy-200 bg-paper-50">
+          {initialError ? (
+            <div className="border border-red-200 bg-red-50 p-5 text-sm leading-7 text-red-800">
+              <p className="font-semibold">Database connection issue</p>
+              <p className="mt-1">{initialError}</p>
+            </div>
+          ) : null}
+
+          <form id="post-editor" onSubmit={handlePostSubmit} className="scroll-mt-24 border border-navy-200 bg-paper-50">
             <div className="grid border-b border-navy-200 xl:grid-cols-[1fr_0.38fr]">
               <div className="min-w-0 p-5 sm:p-6 lg:p-8">
-                <div className="flex items-center gap-3">
-                  <Save aria-hidden="true" className="size-5" />
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em]">Create blog post</h2>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    {editingPostId ? <Pencil aria-hidden="true" className="size-5" /> : <Save aria-hidden="true" className="size-5" />}
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.16em]">
+                      {editingPostId ? "Edit blog post" : "Create blog post"}
+                    </h2>
+                  </div>
+                  {editingPostId ? (
+                    <button
+                      type="button"
+                      onClick={resetEditor}
+                      className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-4 text-xs font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
+                    >
+                      <X aria-hidden="true" className="size-4" />
+                      Cancel edit
+                    </button>
+                  ) : null}
                 </div>
+                {editingPost ? (
+                  <div className="mt-5 border border-navy-200 bg-navy-50 p-4 text-sm leading-7 text-navy-700">
+                    <p>
+                      Editing existing post: <span className="font-semibold text-navy-950">{editingPost.title}</span>
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-navy-500">Current slug: /blog/{editingPost.slug}</p>
+                  </div>
+                ) : null}
 
                 <div className="mt-6 grid gap-5">
                   <div className="grid gap-5 lg:grid-cols-2">
@@ -220,7 +285,7 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
               </div>
               <button type="submit" className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 border border-navy-950 bg-navy-950 px-6 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-paper-50 transition hover:bg-paper-50 hover:text-navy-950 disabled:cursor-not-allowed disabled:opacity-60" disabled={postSaving || imageUploading}>
                 {postSaving ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Save aria-hidden="true" className="size-4" />}
-                Save post
+                {editingPostId ? "Update post" : "Save post"}
               </button>
             </div>
           </form>
@@ -234,11 +299,23 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
             </div>
 
             <div className="border border-navy-200 bg-paper-50 p-5 sm:p-6">
-              <p className="section-label">Post inventory</p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="section-label">Post inventory</p>
+                {editingPostId ? (
+                  <button
+                    type="button"
+                    onClick={resetEditor}
+                    className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 border border-navy-950 bg-navy-950 px-4 text-xs font-semibold uppercase tracking-[0.1em] text-paper-50 transition hover:bg-paper-50 hover:text-navy-950"
+                  >
+                    <Plus aria-hidden="true" className="size-4" />
+                    New post
+                  </button>
+                ) : null}
+              </div>
               <div className="mt-6 grid gap-4">
                 {posts.length ? (
                   posts.slice(0, 8).map((post) => (
-                    <article key={post.id} className="grid gap-4 border border-navy-200 bg-paper-100 p-4 sm:grid-cols-[5.5rem_1fr]">
+                    <article key={post.id} className={["grid gap-4 border p-4 sm:grid-cols-[5.5rem_1fr]", editingPostId === post.id ? "border-navy-950 bg-navy-50" : "border-navy-200 bg-paper-100"].join(" ")}>
                       {post.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={post.image} alt={post.imageAlt} className="aspect-square w-full object-cover" />
@@ -248,9 +325,34 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-navy-500">{post.status}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-navy-500">
+                          <span>{post.status}</span>
+                          <span aria-hidden="true">/</span>
+                          <span>{formatDateForDisplay(post.publishedAt)}</span>
+                        </div>
                         <h3 className="safe-heading mt-1 text-base font-semibold text-navy-950">{post.title}</h3>
                         <p className="mt-2 text-xs text-navy-600">{post.author.name}</p>
+                        <p className="mt-2 truncate text-xs text-navy-500">/blog/{post.slug}</p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditingPost(post)}
+                            className="focus-ring inline-flex min-h-9 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
+                          >
+                            <Pencil aria-hidden="true" className="size-3.5" />
+                            Edit
+                          </button>
+                          {post.status === "published" ? (
+                            <Link
+                              href={`/blog/${post.slug}`}
+                              target="_blank"
+                              className="focus-ring inline-flex min-h-9 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
+                            >
+                              <Eye aria-hidden="true" className="size-3.5" />
+                              View
+                            </Link>
+                          ) : null}
+                        </div>
                       </div>
                     </article>
                   ))
@@ -264,6 +366,43 @@ export function AdminBlogDashboard({ initialPosts }: AdminBlogDashboardProps) {
       </section>
     </main>
   );
+}
+
+function postToForm(post: BlogPostWithAuthor): PostForm {
+  return {
+    title: post.title,
+    content: post.content,
+    tags: post.tags.join(", "),
+    author: post.author.name,
+    image: post.image,
+    imageAlt: post.imageAlt,
+    status: post.status,
+    publishedAt: formatDateForInput(post.publishedAt)
+  };
+}
+
+function formatDateForInput(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function formatDateForDisplay(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "No date";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
 }
 
 function Metric({ value, label }: { value: string; label: string }) {

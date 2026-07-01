@@ -2,7 +2,6 @@ import Image from "next/image";
 
 import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { ButtonLink } from "@/components/ButtonLink";
-import { Logo } from "@/components/Logo";
 import { impactCards, stats } from "@/lib/content";
 
 export function HeroSection() {
@@ -13,8 +12,12 @@ export function HeroSection() {
           <div className="grid min-h-[760px] lg:grid-cols-[0.95fr_1.05fr]">
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-10">
               <div className="flex items-center justify-between gap-6 border-b border-navy-700 pb-5">
-                <Logo tone="dark" showTagline={false} />
-                
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-navy-200">
+                  Medical Law Hub
+                </p>
+                <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-navy-300 sm:block">
+                  Public interest institution
+                </p>
               </div>
 
               <div className="py-12 lg:py-20">

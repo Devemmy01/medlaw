@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 
 import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy",
-  description: "Medical Law Hub privacy placeholder for future policy publication."
-};
+export const metadata: Metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description: "Medical Law Hub privacy policy and data protection information.",
+  path: "/privacy",
+  noIndex: true
+});
 
 export default function PrivacyPage() {
   return (

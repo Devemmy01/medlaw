@@ -7,12 +7,22 @@ import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { resources } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
+import Image from "next/image";
 
-export const metadata: Metadata = {
-  title: "Research & Media",
+export const metadata: Metadata = createPageMetadata({
+  title: "Medical Law Research & Media",
   description:
-    "Read Medical Law Hub research, magazine issues, AI in medicine analysis, telemedicine compliance notes, statutory critiques and policy briefs."
-};
+    "Read Medical Law Hub research, MEDLAW magazine features, AI in medicine analysis, telemedicine compliance notes, organ transplantation law and health policy briefs.",
+  path: "/research-media",
+  image: {
+    url: "/images/medlaw-research-desk.png",
+    width: 1162,
+    height: 1454,
+    alt: "Medical law research desk with books, notes and stethoscope"
+  },
+  keywords: ["medical law research", "MEDLAW magazine", "organ transplantation law", "AI in medicine law"]
+});
 
 export default function ResearchMediaPage() {
   return (
@@ -25,6 +35,9 @@ export default function ResearchMediaPage() {
         primaryLabel="Submit inquiry"
         secondaryHref="/get-involved"
         secondaryLabel="Contribute research"
+        mediaSrc="/images/medlaw-research-desk.png"
+        mediaAlt="Medical law publications, notes and clinical research materials"
+        mediaCaption="Research desk / Media archive / Policy analysis"
       />
 
       <section id="magazine" className="section-y bg-paper-50">
@@ -60,18 +73,39 @@ export default function ResearchMediaPage() {
                 description="The Medical Hub Quarterly Magazine makes complex frameworks accessible while preserving analytical depth for lawyers, clinicians, scholars and policymakers."
               />
             </div>
-            <div className="bg-navy-950 p-6 text-paper-50 sm:p-8 lg:p-10">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-navy-200">Featured archive</p>
-              <h2 className="safe-heading mt-6 font-display text-[clamp(2.4rem,9vw,4rem)] font-semibold uppercase leading-[0.95] tracking-[-0.04em]">Organ Transplantation in Africa</h2>
-              <p className="mt-6 text-base leading-8 text-navy-100">
-                A landmark issue examining legal and regulatory frameworks for organ transplantation and translating technical statutes into accessible professional guidance.
-              </p>
-              <div className="mt-10 grid grid-cols-2 border-y border-navy-700">
-                {["Volume I", "Open access"].map((item) => (
-                  <div key={item} className="border-r border-navy-700 py-4 pr-4 last:border-r-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-navy-200">{item}</p>
-                  </div>
-                ))}
+            <div className="grid bg-navy-950 text-paper-50 md:grid-cols-[0.42fr_0.58fr]">
+              <div className="border-b border-navy-700 p-5 md:border-b-0 md:border-r">
+                <div className="relative mx-auto aspect-[3/4] max-w-xs overflow-hidden border border-navy-700 bg-navy-900">
+                  <Image
+                    src="/images/medlaw-magazine-vol-1.png"
+                    alt="MEDLAW Volume I quarterly magazine cover about organ transplantation"
+                    fill
+                    sizes="(min-width: 1024px) 20vw, 80vw"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+              <div className="p-6 sm:p-8 lg:p-10">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-navy-200">Featured archive</p>
+                <h2 className="safe-heading mt-6 font-display text-[clamp(2.4rem,9vw,4rem)] font-semibold uppercase leading-[0.95] tracking-[-0.04em]">Organ Transplantation in Africa</h2>
+                <p className="mt-6 text-base leading-8 text-navy-100">
+                  A landmark issue examining legal and regulatory frameworks for organ transplantation and translating technical statutes into accessible professional guidance.
+                </p>
+                <div className="mt-10 grid grid-cols-2 border-y border-navy-700">
+                  {["Volume I", "Buy on Selar"].map((item) => (
+                    <div key={item} className="border-r border-navy-700 py-4 pr-4 last:border-r-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-navy-200">{item}</p>
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href="https://selar.com/p3zm"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="focus-ring mt-8 inline-flex min-h-11 items-center justify-center border border-paper-50 bg-paper-50 px-5 text-xs font-semibold uppercase tracking-[0.12em] text-navy-950 transition hover:bg-navy-950 hover:text-paper-50"
+                >
+                  Buy Now
+                </a>
               </div>
             </div>
           </div>

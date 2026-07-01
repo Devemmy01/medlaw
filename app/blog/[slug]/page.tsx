@@ -7,7 +7,9 @@ import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { ButtonLink } from "@/components/ButtonLink";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { PageWrapper } from "@/components/PageWrapper";
-import { getPostBySlug, getPublishedPosts } from "@/lib/blog-store";
+import { site } from "@/lib/content";
+import { getPostBySlug, getPublishedPosts, type BlogPostWithAuthor } from "@/lib/blog-store";
+import { absoluteUrl, seoKeywords } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -19,46 +21,82 @@ type BlogArticlePageProps = {
 
 export async function generateMetadata({ params }: BlogArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await readPostBySlug(slug);
 
   if (!post) {
     return {
-      title: "Blog Article"
+      title: "Blog Article",
+      robots: {
+        index: false,
+        follow: true
+      }
     };
   }
+
+  const articlePath = `/blog/${post.slug}`;
+  const articleImage = getShareImage(post.image);
 
   return {
     title: post.title,
     description: post.excerpt,
+    keywords: Array.from(new Set([...seoKeywords, ...post.tags, post.title])),
+    alternates: {
+      canonical: articlePath
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.image ? [{ url: post.image, alt: post.imageAlt }] : undefined,
+      url: articlePath,
+      siteName: site.name,
+      images: [{ url: articleImage, alt: post.imageAlt || post.title }],
       type: "article",
       publishedTime: post.publishedAt,
       authors: [post.author.name]
     },
     twitter: {
-      card: post.image ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
-      images: post.image ? [post.image] : undefined
+      images: [articleImage]
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1
+      }
     }
   };
 }
 
 export default async function BlogArticlePage({ params }: BlogArticlePageProps) {
   const { slug } = await params;
-  const [post, allPosts] = await Promise.all([getPostBySlug(slug), getPublishedPosts()]);
+  const [postResult, allPosts] = await Promise.all([readPostBySlugState(slug), readPublishedPosts()]);
 
-  if (!post) {
+  if (postResult.error) {
+    return <BlogUnavailable />;
+  }
+
+  if (!postResult.post) {
     notFound();
   }
 
+  const post = postResult.post;
   const relatedPosts = allPosts.filter((item) => item.slug !== post.slug).slice(0, 3);
+  const articleJsonLd = createArticleJsonLd(post);
 
   return (
     <PageWrapper>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c")
+        }}
+      />
       <article className="border-b border-navy-200 bg-paper-50 text-navy-950">
         <div className="container-px py-5">
           <AnimatedReveal className="overflow-hidden border border-navy-200 bg-paper-100">
@@ -67,7 +105,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
                 <Link href="/blog" className="text-xs font-semibold uppercase tracking-[0.16em] text-navy-500 hover:text-navy-950">
                   Back to blog
                 </Link>
-                <h1 className="safe-heading mt-10 font-display text-[clamp(3rem,12vw,6.5rem)] font-semibold uppercase leading-[0.9] tracking-[-0.05em]">
+                <h1 className="safe-heading mt-10 font-display text-[clamp(2.4rem,8vw,5rem)] font-semibold uppercase leading-[0.95] tracking-[-0.045em]">
                   {post.title}
                 </h1>
                 <p className="mt-6 max-w-3xl text-base leading-8 text-navy-700 sm:text-lg">{post.excerpt}</p>
@@ -91,15 +129,8 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
       </article>
 
       <section className="section-y bg-paper-50">
-        <div className="container-px grid gap-10 lg:grid-cols-[0.28fr_1fr]">
-          <aside className="lg:sticky lg:top-32 lg:self-start">
-            <div className="border border-navy-200 bg-paper-100 p-5">
-              <p className="section-label">Author</p>
-              <h2 className="mt-4 text-xl font-semibold text-navy-950">{post.author.name}</h2>
-              <p className="mt-1 text-sm font-medium text-navy-600">{post.author.role || "Contributor"}</p>
-              {post.author.bio ? <p className="mt-4 text-sm leading-7 text-navy-700">{post.author.bio}</p> : null}
-            </div>
-          </aside>
+        <div className="container-px ">
+          
 
           <AnimatedReveal className="min-w-0 border border-navy-200 bg-paper-100 p-6 sm:p-8 lg:p-10">
             <MarkdownRenderer content={post.content} />
@@ -163,9 +194,104 @@ function MetaLine({ icon: Icon, label }: MetaLineProps) {
 }
 
 function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
   return new Intl.DateTimeFormat("en", {
     month: "long",
     day: "numeric",
     year: "numeric"
-  }).format(new Date(value));
+  }).format(date);
+}
+
+async function readPostBySlug(slug: string) {
+  try {
+    return await getPostBySlug(slug);
+  } catch (error) {
+    console.error(`Failed to load blog post "${slug}".`, error);
+    return null;
+  }
+}
+
+async function readPostBySlugState(slug: string) {
+  try {
+    return {
+      post: await getPostBySlug(slug),
+      error: false
+    };
+  } catch (error) {
+    console.error(`Failed to load blog post "${slug}".`, error);
+
+    return {
+      post: null,
+      error: true
+    };
+  }
+}
+
+async function readPublishedPosts() {
+  try {
+    return await getPublishedPosts();
+  } catch (error) {
+    console.error("Failed to load related blog posts.", error);
+    return [];
+  }
+}
+
+function getShareImage(value: string) {
+  if (!value) {
+    return absoluteUrl("/images/medlaw-research-desk.png");
+  }
+
+  return value.startsWith("http") ? value : absoluteUrl(value);
+}
+
+function createArticleJsonLd(post: BlogPostWithAuthor) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    image: getShareImage(post.image),
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt || post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: post.author.name
+    },
+    publisher: {
+      "@id": `${site.url}/#organization`
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absoluteUrl(`/blog/${post.slug}`)
+    },
+    keywords: post.tags.join(", ")
+  };
+}
+
+function BlogUnavailable() {
+  return (
+    <PageWrapper>
+      <section className="section-y min-h-[60vh] bg-paper-50">
+        <div className="container-px">
+          <div className="border border-navy-200 bg-paper-100 p-7 sm:p-10">
+            <p className="section-label">Blog temporarily unavailable</p>
+            <h1 className="safe-heading mt-5 font-display text-[clamp(2.7rem,10vw,5rem)] font-semibold uppercase leading-[0.92] tracking-[-0.045em] text-navy-950">
+              The article could not be loaded right now.
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-navy-700">
+              The database connection is taking longer than expected. Please refresh in a moment, or return to the blog archive.
+            </p>
+            <div className="mt-8">
+              <ButtonLink href="/blog">Back to Blog</ButtonLink>
+            </div>
+          </div>
+        </div>
+      </section>
+    </PageWrapper>
+  );
 }

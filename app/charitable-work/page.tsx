@@ -6,12 +6,21 @@ import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { charitablePrograms } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Charitable Work",
+export const metadata: Metadata = createPageMetadata({
+  title: "Charitable Medical Law Education Programmes",
   description:
-    "Explore Medical Law Hub's charitable education, law reform, medical law competitions, legal toolkits and public health awareness programmes."
-};
+    "Explore Medical Law Hub's charitable education programmes, medical law competitions, legal literacy toolkits, health law reform work and public awareness campaigns.",
+  path: "/charitable-work",
+  image: {
+    url: "/images/medlaw-workshop.png",
+    width: 1536,
+    height: 1024,
+    alt: "Community medical-law education workshop"
+  },
+  keywords: ["medical law charity", "legal literacy", "patient rights awareness"]
+});
 
 export default function CharitableWorkPage() {
   return (
@@ -24,6 +33,9 @@ export default function CharitableWorkPage() {
         primaryLabel="Fund the mission"
         secondaryHref="/get-involved"
         secondaryLabel="Volunteer or partner"
+        mediaSrc="/images/medlaw-workshop.png"
+        mediaAlt="Community medical-law awareness workshop with healthcare and public participants"
+        mediaCaption="Community education / Patient rights / Public benefit"
       />
 
       <section className="section-y bg-paper-50">

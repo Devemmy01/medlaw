@@ -1,6 +1,7 @@
+import Image from "next/image";
+
 import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { ButtonLink } from "@/components/ButtonLink";
-import { Logo } from "@/components/Logo";
 
 type PageHeroProps = {
   eyebrow: string;
@@ -10,6 +11,9 @@ type PageHeroProps = {
   primaryLabel?: string;
   secondaryHref?: string;
   secondaryLabel?: string;
+  mediaSrc?: string;
+  mediaAlt?: string;
+  mediaCaption?: string;
 };
 
 export function PageHero({
@@ -19,7 +23,10 @@ export function PageHero({
   primaryHref,
   primaryLabel,
   secondaryHref,
-  secondaryLabel
+  secondaryLabel,
+  mediaSrc = "/images/medlaw-research-desk.png",
+  mediaAlt = "Medical law research materials with clinical and legal references",
+  mediaCaption = "Rights / Research / Reform"
 }: PageHeroProps) {
   return (
     <section className="border-b border-navy-200 bg-paper-100 py-5 text-navy-950">
@@ -28,7 +35,9 @@ export function PageHero({
           <div className="grid lg:grid-cols-[1fr_0.44fr]">
             <div className="min-w-0 border-b border-navy-200 p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
               <div className="flex items-center justify-between gap-6 border-b border-navy-200 pb-5">
-                <Logo showTagline={false} />
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
+                  Medical Law Hub
+                </p>
                 <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-navy-500 sm:block">
                   MLH / Page
                 </p>
@@ -51,18 +60,29 @@ export function PageHero({
                 </div>
               ) : null}
             </div>
-            <aside className="flex min-h-72 flex-col justify-between bg-navy-950 p-6 text-paper-50 sm:p-8 lg:p-10">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-navy-200">Where Medicine Meets Law</p>
-                <p className="mt-8 font-display text-[clamp(2.5rem,10vw,4.5rem)] font-semibold uppercase leading-[0.9] tracking-[-0.05em]">
-                  Rights
-                  <span className="block text-navy-300">Research</span>
-                  Reform
+            <aside className="relative min-h-80 overflow-hidden bg-navy-950 text-paper-50">
+              <Image
+                src={mediaSrc}
+                alt={mediaAlt}
+                fill
+                priority={false}
+                sizes="(min-width: 1024px) 38vw, 100vw"
+                className="object-cover opacity-70"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/55 to-navy-950/10" />
+              <div className="relative z-10 flex min-h-80 flex-col justify-between p-6 sm:p-8 lg:p-10">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-navy-200">Where Medicine Meets Law</p>
+                  <p className="mt-8 font-display text-[clamp(2.5rem,10vw,4.5rem)] font-semibold uppercase leading-[0.9] tracking-[-0.05em]">
+                    Rights
+                    <span className="block text-navy-300">Research</span>
+                    Reform
+                  </p>
+                </div>
+                <p className="mt-10 max-w-sm text-sm leading-7 text-navy-100">
+                  {mediaCaption}
                 </p>
               </div>
-              <p className="mt-10 max-w-sm text-sm leading-7 text-navy-100">
-                A public-interest platform for education, policy, ethics and healthcare accountability.
-              </p>
             </aside>
           </div>
         </AnimatedReveal>

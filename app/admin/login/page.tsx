@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 
 import { AdminLoginForm } from "@/app/admin/login/AdminLoginForm";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Admin Login",
-  description: "Sign in to manage Medical Law Hub blog publishing."
-};
+  description: "Sign in to manage Medical Law Hub blog publishing.",
+  path: "/admin/login",
+  noIndex: true
+});
 
 export const dynamic = "force-dynamic";
 

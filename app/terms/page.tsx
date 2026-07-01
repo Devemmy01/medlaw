@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 
 import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms",
-  description: "Medical Law Hub terms placeholder for future legal publication."
-};
+export const metadata: Metadata = createPageMetadata({
+  title: "Terms of Use",
+  description: "Medical Law Hub terms of use, disclaimers and legal notices.",
+  path: "/terms",
+  noIndex: true
+});
 
 export default function TermsPage() {
   return (

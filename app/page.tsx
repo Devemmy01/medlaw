@@ -5,6 +5,16 @@ import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
 import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { activities, audiences, focusSectors, impactCards } from "@/lib/content";
+import { createPageMetadata } from "@/lib/seo";
+import Image from "next/image";
+
+export const metadata = createPageMetadata({
+  title: "Medical Law, Patient Rights & Bioethics",
+  description:
+    "Medical Law Hub connects medical law education, patient rights, bioethics, health policy research, clinical negligence awareness and healthcare accountability resources.",
+  path: "/",
+  keywords: ["medical law education", "patient rights education", "healthcare law research"]
+});
 
 export default function HomePage() {
   return (
@@ -71,6 +81,92 @@ export default function HomePage() {
               </div>
             </div>
           </AnimatedReveal>
+        </div>
+      </section>
+
+      <section className="section-y bg-paper-100">
+        <div className="container-px">
+          <div className="grid overflow-hidden border border-navy-200 bg-paper-50 lg:grid-cols-[1.08fr_0.92fr]">
+            <AnimatedReveal className="border-b border-navy-200 p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
+              <SectionHeader
+                eyebrow="Featured video"
+                title="Hear the Medical Law Hub conversation in motion."
+                description="A short video feature for visitors who would rather watch first, then explore the Hub's education, research and advocacy work."
+              />
+              <div className="mt-8 overflow-hidden border border-navy-200 bg-navy-950">
+                <div className="relative aspect-video">
+                  <iframe
+                    src="https://www.youtube-nocookie.com/embed/JMlfS7vFpcs"
+                    title="Medical Law Hub featured video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full"
+                  />
+                </div>
+              </div>
+            </AnimatedReveal>
+
+            <AnimatedReveal delay={0.08} className="grid bg-navy-950 text-paper-50">
+              <div className="relative min-h-[28rem]">
+                <Image
+                  src="/images/medlaw-consultation.png"
+                  alt="A doctor and legal professional reviewing medical-law documents together"
+                  fill
+                  sizes="(min-width: 1024px) 42vw, 100vw"
+                  className="object-cover opacity-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 lg:p-10">
+                  <p className="section-label text-navy-200">Multimedia learning</p>
+                  <p className="safe-heading mt-4 max-w-md font-display text-[clamp(2.25rem,8vw,4rem)] font-semibold uppercase leading-[0.95] tracking-[-0.04em]">
+                    Watch. Read. Act.
+                  </p>
+                  <p className="mt-4 max-w-md text-sm leading-7 text-navy-100">
+                    Pairing explainers, expert conversations and visual resources with practical medico-legal guidance.
+                  </p>
+                </div>
+              </div>
+            </AnimatedReveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-y border-y border-navy-200 bg-paper-50">
+        <div className="container-px">
+          <div className="grid overflow-hidden border border-navy-200 bg-paper-100 lg:grid-cols-[0.45fr_0.55fr]">
+            <AnimatedReveal className="bg-navy-950 p-5 sm:p-7 lg:p-8">
+              <div className="relative mx-auto aspect-[3/4] max-w-md overflow-hidden border border-navy-700 bg-navy-900 shadow-2xl shadow-navy-950/20">
+                <Image
+                  src="/images/medlaw-magazine-vol-1.png"
+                  alt="MEDLAW Volume I quarterly magazine cover about organ transplantation"
+                  fill
+                  sizes="(min-width: 1024px) 36vw, 86vw"
+                  className="object-cover"
+                />
+              </div>
+            </AnimatedReveal>
+
+            <AnimatedReveal delay={0.08} className="flex flex-col justify-center p-6 sm:p-8 lg:p-12">
+              <p className="section-label">Quarterly magazine</p>
+              <h2 className="safe-heading mt-6 font-display text-[clamp(2.65rem,10vw,5rem)] font-semibold uppercase leading-[0.92] tracking-[-0.045em] text-navy-950">
+                The Medical Hub Quarterly Magazine (Volume I)
+              </h2>
+              <p className="mt-6 max-w-2xl text-base leading-8 text-navy-700 sm:text-lg">
+                This is the first edition of the Medical Law Hub magazine and it&apos;s all about organ transplantation in Nigeria and the laws regulating same. It has other spicy additions and we&apos;re certain you&apos;ll love it
+              </p>
+              <div className="mt-8">
+                <a
+                  href="https://selar.com/p3zm"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="focus-ring inline-flex min-h-12 items-center justify-center border border-navy-950 bg-navy-950 px-6 text-sm font-semibold uppercase tracking-[0.12em] text-paper-50 transition hover:-translate-y-0.5 hover:bg-paper-50 hover:text-navy-950"
+                >
+                  Buy Now
+                </a>
+              </div>
+            </AnimatedReveal>
+          </div>
         </div>
       </section>
 

@@ -52,6 +52,10 @@ type CreatePostInput = {
   publishedAt?: string;
 };
 
+type UpdatePostInput = CreatePostInput & {
+  id: string;
+};
+
 type BlogCollections = {
   authors: Collection<LegacyBlogAuthor>;
   posts: Collection<BlogPostDocument>;
@@ -81,7 +85,18 @@ export async function getPublishedPosts() {
 
 export async function getPostBySlug(slug: string) {
   const { authors, posts } = await getBlogCollections();
-  const post = await posts.findOne({ slug, status: "published" });
+  const decodedSlug = decodeSlug(slug);
+  const normalizedSlug = slugify(decodedSlug);
+  const slugCandidates = Array.from(new Set([slug, decodedSlug, normalizedSlug].filter(Boolean)));
+  let post = await posts.findOne({ slug: { $in: slugCandidates }, status: "published" });
+
+  if (!post && normalizedSlug) {
+    const publishedPosts = await posts.find({ status: "published" }).toArray();
+    post =
+      publishedPosts.find((item) => {
+        return slugify(item.slug ?? "") === normalizedSlug || slugify(item.title ?? "") === normalizedSlug;
+      }) ?? null;
+  }
 
   if (!post) {
     return null;
@@ -93,7 +108,7 @@ export async function getPostBySlug(slug: string) {
 }
 
 export async function createPost(input: CreatePostInput) {
-  const { posts } = await getBlogCollections();
+  const { posts } = await getBlogCollections({ ensureIndexes: true });
   const title = input.title.trim();
   const content = input.content.trim();
   const authorName = input.author.trim();
@@ -140,6 +155,63 @@ export async function createPost(input: CreatePostInput) {
   return hydratePost(post);
 }
 
+export async function updatePost(input: UpdatePostInput) {
+  const { posts } = await getBlogCollections({ ensureIndexes: true });
+  const id = input.id.trim();
+  const existingPost = await posts.findOne({ id });
+
+  if (!existingPost) {
+    throw new Error("Post not found.");
+  }
+
+  const title = input.title.trim();
+  const content = input.content.trim();
+  const authorName = input.author.trim();
+  const image = input.image?.trim() ?? "";
+
+  if (!title) {
+    throw new Error("Post title is required.");
+  }
+
+  if (!content) {
+    throw new Error("Markdown content is required.");
+  }
+
+  if (!authorName) {
+    throw new Error("Author name is required.");
+  }
+
+  if (image && !isValidImageReference(image)) {
+    throw new Error("Use a valid uploaded image or image URL.");
+  }
+
+  const now = new Date().toISOString();
+  const status = input.status === "draft" ? "draft" : "published";
+  const requestedSlug = slugify(title) || "blog-post";
+  const slug = requestedSlug === existingPost.slug ? existingPost.slug : await createUniqueSlug(title, posts, id);
+  const update: Partial<BlogPostDocument> = {
+    title,
+    slug,
+    excerpt: createExcerpt(content) || title,
+    content,
+    tags: normalizeTags(input.tags),
+    author: { name: authorName },
+    image,
+    imageAlt: image ? input.imageAlt?.trim() || title : "",
+    status,
+    publishedAt: normalizePublishedAt(input.publishedAt, existingPost.publishedAt || now),
+    readTime: estimateReadTime(content),
+    updatedAt: now
+  };
+
+  await posts.updateOne({ id }, { $set: update });
+
+  return hydratePost({
+    ...existingPost,
+    ...update
+  });
+}
+
 export function slugify(value: string) {
   return value
     .toLowerCase()
@@ -150,32 +222,51 @@ export function slugify(value: string) {
     .slice(0, 90);
 }
 
-async function getBlogCollections(): Promise<BlogCollections> {
+function decodeSlug(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+async function getBlogCollections(options: { ensureIndexes?: boolean } = {}): Promise<BlogCollections> {
   const db = await getMongoDatabase();
   const collections = {
     authors: db.collection<LegacyBlogAuthor>("blog_authors"),
     posts: db.collection<BlogPostDocument>("blog_posts")
   };
 
+  if (options.ensureIndexes) {
+    await ensureBlogIndexes(collections);
+  }
+
+  return collections;
+}
+
+async function ensureBlogIndexes(collections: BlogCollections) {
   if (!indexesReady) {
     indexesReady = Promise.all([
       collections.posts.createIndex({ id: 1 }, { unique: true }),
       collections.posts.createIndex({ slug: 1 }, { unique: true }),
       collections.posts.createIndex({ status: 1, publishedAt: -1 })
-    ]).then(() => undefined);
+    ])
+      .then(() => undefined)
+      .catch((error) => {
+        indexesReady = null;
+        throw error;
+      });
   }
 
   await indexesReady;
-
-  return collections;
 }
 
-async function createUniqueSlug(value: string, posts: Collection<BlogPostDocument>) {
+async function createUniqueSlug(value: string, posts: Collection<BlogPostDocument>, excludingId?: string) {
   const base = slugify(value) || "blog-post";
   let slug = base;
   let suffix = 2;
 
-  while (await posts.findOne({ slug }, { projection: { id: 1 } })) {
+  while (await posts.findOne({ slug, ...(excludingId ? { id: { $ne: excludingId } } : {}) }, { projection: { id: 1 } })) {
     slug = `${base}-${suffix}`;
     suffix += 1;
   }
