@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Building2, Newspaper } from "lucide-react";
 
-import { ContactForm } from "@/components/ContactForm";
 import { ImpactCard } from "@/components/Cards";
 import { AnimatedReveal } from "@/components/AnimatedReveal";
 import { PageHero } from "@/components/PageHero";
 import { PageWrapper } from "@/components/PageWrapper";
 import { SectionHeader } from "@/components/SectionHeader";
-import { contactCards } from "@/lib/content";
+import { contactCards, site } from "@/lib/content";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -37,20 +36,29 @@ export default function ContactPage() {
       />
 
       <section className="section-y bg-paper-50">
-        <div className="container-px grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+        <div className="container-px grid gap-8 lg:items-start">
           <div className="lg:sticky lg:top-32">
             <SectionHeader
               eyebrow="Verified channels"
               title="Central contact details"
-              description="Use these details for formal communications while the digital inquiry flow remains a frontend placeholder."
+              description="Use these details for formal communications. Click the email address to open your mail app and compose a message directly."
             />
             <div className="mt-8 grid gap-0 border border-navy-200 bg-paper-50">
               {contactCards.map((item, index) => (
                 <ImpactCard key={item.title} item={item} delay={index * 0.04} />
               ))}
             </div>
+            <AnimatedReveal className="mt-6 border border-navy-200 bg-paper-50 p-6">
+              <p className="section-label">Direct email</p>
+              <a
+                href={`mailto:${site.email}`}
+                className="mt-4 inline-flex min-h-11 items-center justify-center border border-navy-950 bg-navy-950 px-5 py-2.5 text-sm font-semibold text-paper-50 transition hover:bg-paper-50 hover:text-navy-950"
+              >
+                {site.email}
+              </a>
+              <p className="mt-3 text-sm leading-7 text-navy-700">This link opens your default mail compose app with the address pre-filled.</p>
+            </AnimatedReveal>
           </div>
-          <ContactForm />
         </div>
       </section>
 

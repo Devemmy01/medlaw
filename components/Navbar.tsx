@@ -146,16 +146,16 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="absolute inset-x-0 top-full z-40 border-b border-navy-200 bg-paper-50 lg:hidden"
+      className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-navy-200 bg-paper-50 lg:hidden"
     >
       <div className="container-px py-5">
         <div className="overflow-hidden border border-navy-200 bg-paper-100">
           {navItems.map((navItem, index) => (
-            <motion.div key={navItem.href} variants={item}>
+            <motion.div key={navItem.href} variants={item} className="border-b border-navy-200 last:border-b-0">
               <Link
                 href={navItem.href}
                 onClick={onClose}
-                className="focus-ring grid grid-cols-[3.5rem_1fr_auto] items-center border-b border-navy-200 px-4 py-4 text-navy-950 transition hover:bg-navy-50"
+                className="focus-ring grid grid-cols-[3.5rem_1fr_auto] items-center px-4 py-4 text-navy-950 transition hover:bg-navy-50"
               >
                 <span className="text-xs font-semibold text-navy-400">{String(index + 1).padStart(2, "0")}</span>
                 <span className="font-display text-2xl font-semibold uppercase leading-none tracking-[-0.04em]">
@@ -163,6 +163,25 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
                 </span>
                 <span className="text-lg leading-none">↗</span>
               </Link>
+              {navItem.children ? (
+                <div className="border-t border-navy-200 bg-paper-50 px-4 py-3">
+                  <div className="grid gap-1">
+                    {navItem.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={onClose}
+                        className="focus-ring inline-flex min-h-10 items-center justify-between gap-3 px-2 text-sm font-medium text-navy-700 transition hover:bg-navy-50 hover:text-navy-950"
+                      >
+                        <span>{child.label}</span>
+                        <span aria-hidden="true" className="text-base leading-none">
+                          ↗
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </motion.div>
           ))}
         </div>

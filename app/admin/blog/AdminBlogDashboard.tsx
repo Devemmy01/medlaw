@@ -1,10 +1,9 @@
 "use client";
 
 import { Eye, ImageUp, Link2, Loader2, LogOut, Pencil, Plus, Save, X } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useDeferredValue, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import type { BlogPostWithAuthor } from "@/lib/blog-store";
 
@@ -15,7 +14,6 @@ type AdminBlogDashboardProps = {
 
 type PostForm = {
   title: string;
-  content: string;
   tags: string;
   author: string;
   image: string;
@@ -26,8 +24,6 @@ type PostForm = {
 
 const initialPostForm: PostForm = {
   title: "",
-  content:
-    "## Start with a clear legal question\n\nWrite the article here. Use the toolbar to add links, lists, quotes and section headings.\n\n- Explain the issue\n- Show the legal or policy implication\n- Close with a practical takeaway",
   tags: "",
   author: "",
   image: "",
@@ -35,6 +31,9 @@ const initialPostForm: PostForm = {
   status: "published",
   publishedAt: ""
 };
+
+const initialPostContent =
+  "## Start with a clear legal question\n\nWrite the article here. Use the toolbar to add links, lists, quotes and section headings.\n\n- Explain the issue\n- Show the legal or policy implication\n- Close with a practical takeaway";
 
 export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlogDashboardProps) {
   const [posts, setPosts] = useState(initialPosts);
@@ -44,7 +43,6 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
   const [imageUploading, setImageUploading] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState(initialError);
-  const previewContent = useDeferredValue(postForm.content);
 
   const publishedPosts = useMemo(() => posts.filter((post) => post.status === "published").length, [posts]);
   const editingPost = useMemo(() => posts.find((post) => post.id === editingPostId), [editingPostId, posts]);
@@ -52,7 +50,7 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
   async function handlePostSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const content = String(formData.get("content") ?? postForm.content);
+    const content = String(formData.get("content") ?? initialPostContent);
     setPostSaving(true);
     setNotice("");
     setError("");
@@ -200,7 +198,14 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
             </div>
           ) : null}
 
-          <form id="post-editor" onSubmit={handlePostSubmit} className="scroll-mt-24 border border-navy-200 bg-paper-50">
+          <form
+            id="post-editor"
+            onSubmitCapture={() => {
+              (document.activeElement as HTMLElement | null)?.blur();
+            }}
+            onSubmit={handlePostSubmit}
+            className="scroll-mt-24 border border-navy-200 bg-paper-50"
+          >
             <div className="grid border-b border-navy-200 xl:grid-cols-[1fr_0.38fr]">
               <div className="min-w-0 p-5 sm:p-6 lg:p-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -250,8 +255,7 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
                     </label>
                     <Field label="Publish date" type="date" value={postForm.publishedAt} onChange={(value) => setPostForm((form) => ({ ...form, publishedAt: value }))} />
                   </div>
-                  <RichTextEditor label="Article body" value={postForm.content} onChange={(value) => setPostForm((form) => ({ ...form, content: value }))} />
-                  <p className="text-xs leading-6 text-navy-600">The excerpt is generated from this body, and the URL slug is generated from the title.</p>
+                  <ArticleBodyField key={editingPostId || "new-post"} initialContent={editingPost?.content ?? initialPostContent} />
                 </div>
               </div>
 
@@ -290,76 +294,67 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
             </div>
           </form>
 
-          <section className="grid gap-8 xl:grid-cols-[1fr_0.8fr]">
-            <div className="border border-navy-200 bg-paper-50 p-5 sm:p-6">
-              <p className="section-label">Article preview</p>
-              <div className="mt-6 border border-navy-200 bg-paper-100 p-5 sm:p-6">
-                <MarkdownRenderer content={previewContent} />
-              </div>
+          <section className="border border-navy-200 bg-paper-50 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="section-label">Post inventory</p>
+              {editingPostId ? (
+                <button
+                  type="button"
+                  onClick={resetEditor}
+                  className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 border border-navy-950 bg-navy-950 px-4 text-xs font-semibold uppercase tracking-[0.1em] text-paper-50 transition hover:bg-paper-50 hover:text-navy-950"
+                >
+                  <Plus aria-hidden="true" className="size-4" />
+                  New post
+                </button>
+              ) : null}
             </div>
-
-            <div className="border border-navy-200 bg-paper-50 p-5 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="section-label">Post inventory</p>
-                {editingPostId ? (
-                  <button
-                    type="button"
-                    onClick={resetEditor}
-                    className="focus-ring inline-flex min-h-10 items-center justify-center gap-2 border border-navy-950 bg-navy-950 px-4 text-xs font-semibold uppercase tracking-[0.1em] text-paper-50 transition hover:bg-paper-50 hover:text-navy-950"
-                  >
-                    <Plus aria-hidden="true" className="size-4" />
-                    New post
-                  </button>
-                ) : null}
-              </div>
-              <div className="mt-6 grid gap-4">
-                {posts.length ? (
-                  posts.slice(0, 8).map((post) => (
-                    <article key={post.id} className={["grid gap-4 border p-4 sm:grid-cols-[5.5rem_1fr]", editingPostId === post.id ? "border-navy-950 bg-navy-50" : "border-navy-200 bg-paper-100"].join(" ")}>
-                      {post.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={post.image} alt={post.imageAlt} className="aspect-square w-full object-cover" />
-                      ) : (
-                        <div className="flex aspect-square w-full items-center justify-center border border-navy-200 bg-paper-50 text-navy-400">
-                          <ImageUp aria-hidden="true" className="size-5" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-navy-500">
-                          <span>{post.status}</span>
-                          <span aria-hidden="true">/</span>
-                          <span>{formatDateForDisplay(post.publishedAt)}</span>
-                        </div>
-                        <h3 className="safe-heading mt-1 text-base font-semibold text-navy-950">{post.title}</h3>
-                        <p className="mt-2 text-xs text-navy-600">{post.author.name}</p>
-                        <p className="mt-2 truncate text-xs text-navy-500">/blog/{post.slug}</p>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => startEditingPost(post)}
+            <div className="mt-6 grid gap-4">
+              {posts.length ? (
+                posts.slice(0, 8).map((post) => (
+                  <article key={post.id} className={["grid gap-4 border p-4 sm:grid-cols-[5.5rem_1fr]", editingPostId === post.id ? "border-navy-950 bg-navy-50" : "border-navy-200 bg-paper-100"].join(" ")}>
+                    {post.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={post.image} alt={post.imageAlt} className="aspect-square w-full object-cover" />
+                    ) : (
+                      <div className="flex aspect-square w-full items-center justify-center border border-navy-200 bg-paper-50 text-navy-400">
+                        <ImageUp aria-hidden="true" className="size-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-navy-500">
+                        <span>{post.status}</span>
+                        <span aria-hidden="true">/</span>
+                        <span>{formatDateForDisplay(post.publishedAt)}</span>
+                      </div>
+                      <h3 className="safe-heading mt-1 text-base font-semibold text-navy-950">{post.title}</h3>
+                      <p className="mt-2 text-xs text-navy-600">{post.author.name}</p>
+                      <p className="mt-2 truncate text-xs text-navy-500">/blog/{post.slug}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startEditingPost(post)}
+                          className="focus-ring inline-flex min-h-9 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
+                        >
+                          <Pencil aria-hidden="true" className="size-3.5" />
+                          Edit
+                        </button>
+                        {post.status === "published" ? (
+                          <Link
+                            href={`/blog/${post.slug}`}
+                            target="_blank"
                             className="focus-ring inline-flex min-h-9 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
                           >
-                            <Pencil aria-hidden="true" className="size-3.5" />
-                            Edit
-                          </button>
-                          {post.status === "published" ? (
-                            <Link
-                              href={`/blog/${post.slug}`}
-                              target="_blank"
-                              className="focus-ring inline-flex min-h-9 items-center justify-center gap-2 border border-navy-300 bg-paper-50 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-navy-950 transition hover:border-navy-950"
-                            >
-                              <Eye aria-hidden="true" className="size-3.5" />
-                              View
-                            </Link>
-                          ) : null}
-                        </div>
+                            <Eye aria-hidden="true" className="size-3.5" />
+                            View
+                          </Link>
+                        ) : null}
                       </div>
-                    </article>
-                  ))
-                ) : (
-                  <p className="text-sm leading-7 text-navy-700">No posts yet. Published posts will appear on the public blog.</p>
-                )}
-              </div>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="text-sm leading-7 text-navy-700">No posts yet. Published posts will appear on the public blog.</p>
+              )}
             </div>
           </section>
         </div>
@@ -368,10 +363,22 @@ export function AdminBlogDashboard({ initialPosts, initialError = "" }: AdminBlo
   );
 }
 
+function ArticleBodyField({ initialContent }: { initialContent: string }) {
+  const [content, setContent] = useState(initialContent);
+
+  return (
+    <div className="grid gap-5">
+      <RichTextEditor label="Article body" value={content} onChange={setContent} />
+      <p className="text-xs leading-6 text-navy-600">
+        The excerpt is generated from this body, and the URL slug is generated from the title. Large pasted articles now stay in the editor without rebuilding a live preview.
+      </p>
+    </div>
+  );
+}
+ 
 function postToForm(post: BlogPostWithAuthor): PostForm {
   return {
     title: post.title,
-    content: post.content,
     tags: post.tags.join(", "),
     author: post.author.name,
     image: post.image,
