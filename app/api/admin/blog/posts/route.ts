@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -54,6 +55,8 @@ export async function POST(request: NextRequest) {
       publishedAt: body.publishedAt
     });
 
+    revalidateBlog();
+
     return NextResponse.json({ post }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: getMessage(error) }, { status: isDatabaseConnectionError(error) ? 503 : 400 });
@@ -90,10 +93,17 @@ export async function PATCH(request: NextRequest) {
       publishedAt: body.publishedAt
     });
 
+    revalidateBlog();
+
     return NextResponse.json({ post });
   } catch (error) {
     return NextResponse.json({ error: getMessage(error) }, { status: isDatabaseConnectionError(error) ? 503 : 400 });
   }
+}
+
+function revalidateBlog() {
+  revalidatePath("/blog");
+  revalidatePath("/blog/[slug]", "page");
 }
 
 function getMessage(error: unknown) {

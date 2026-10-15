@@ -11,7 +11,13 @@ import { site } from "@/lib/content";
 import { getPostBySlug, getPublishedPosts, type BlogPostWithAuthor } from "@/lib/blog-store";
 import { absoluteUrl, seoKeywords } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+// Serve from cache; admin saves call revalidatePath so new posts appear immediately.
+export const revalidate = 300;
+
+// Empty list: posts are rendered on first request, then cached (ISR).
+export async function generateStaticParams() {
+  return [];
+}
 
 type BlogArticlePageProps = {
   params: Promise<{

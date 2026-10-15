@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: BlogImageRouteProps) {
   return new Response(image.stream, {
     headers: {
       "Content-Type": image.contentType,
-      "Cache-Control": "public, max-age=31536000, immutable"
+      "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable"
     }
   });
 }

@@ -25,7 +25,8 @@ export const metadata: Metadata = createPageMetadata({
   keywords: ["medical law blog", "patient rights articles", "clinical negligence", "bioethics articles"]
 });
 
-export const dynamic = "force-dynamic";
+// Serve from cache; admin saves call revalidatePath so new posts appear immediately.
+export const revalidate = 300;
 
 export default async function BlogPage() {
   let blogPosts: BlogPostWithAuthor[] = [];
